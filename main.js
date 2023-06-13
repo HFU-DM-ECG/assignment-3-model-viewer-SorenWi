@@ -22,12 +22,25 @@ scene.add( gridHelper );
 
 //GLTF Loader
 const loader = new GLTFLoader();
+const textureLoader = new THREE.TextureLoader();
 
+//Depth
+const depthRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+const depth = depthRenderTarget.texture;
+//renderer.setRenderTarget(depthRenderTarget);
+
+//Crystal
 let crystalMaterial;
 let crystalFragmentShader;
 let crystalVertexShader;
 
+//Water
+let waterFragmentShader;
+let waterVertexShader;
+let waterMaterial;
+
 camera.position.z = 5;
+camera.position.y = 3;
 
 init();
 
@@ -53,7 +66,36 @@ async function init() {
 
 	const crystal = await loadObject("./models/Crystal.glb");
 	crystal.material = crystalMaterial;
+	crystal.position.x = 2;
+	crystal.position.y = -2;
 	scene.add(crystal);
+
+
+	//Plane for water shader testing
+	waterFragmentShader = await fetch('./shaders/water.frag').then(response => response.text());
+	waterVertexShader = await fetch('./shaders/water.vert').then(response => response.text());
+
+	const noiseDetailedTexture = await loadTexture('./textures/noise_detailed.png');
+	const noiseRoughTexture = await loadTexture("./textures/noise_rough.png");
+
+	waterMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			time: { value: 0.0 },
+			waterSpeed: { value: .6 },
+			waterBaseColor: { value: new THREE.Vector3(.4, .7, 1) },
+			noiseDetailed: { type: "t", value: noiseDetailedTexture },
+			noiseRough: { type: "t", value: noiseRoughTexture },
+		},
+		transparent: true,
+		vertexShader: waterVertexShader,
+		fragmentShader: waterFragmentShader,
+	})
+
+	const waterfall = await loadObject("./models/Waterfall.glb");
+	waterfall.material = waterMaterial;
+	//const planeMesh = new THREE.Mesh(waterfall, waterMaterial);
+	//planeMesh.rotation.x = - Math.PI * 0.5;
+	scene.add(waterfall);
 
 	animate();
 }
@@ -68,10 +110,19 @@ function createCrystalMaterial(crystalColor, fresnelColor, fresnelIntensity, fre
 			fresnelIntensity: { value: fresnelIntensity },
 			fresnelPower: { value: fresnelPower },
 		},
-	
 		vertexShader: crystalVertexShader,
 		fragmentShader: crystalFragmentShader
 	} );
+}
+
+//Loads texture async and enables repeat wrapping
+async function loadTexture(path) {
+	return new Promise((resolve) => {
+		const texture = textureLoader.load(path);
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		resolve(texture);
+	});
 }
 
 async function loadObject(path) {
@@ -88,7 +139,7 @@ function animate(time) {
 	time *= 0.001;
 
 
-	//crystalMaterial.uniforms.time.value = time;
+	waterMaterial.uniforms.time.value = time;
 	crystalMaterial.uniforms.viewDir.value = getViewDir();
 
 	controls.update();
