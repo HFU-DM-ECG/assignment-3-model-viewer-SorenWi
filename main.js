@@ -45,6 +45,19 @@ camera.position.y = 3;
 init();
 
 async function init() {
+
+
+	const pointLight = new THREE.PointLight();
+	pointLight.intensity = 3;
+	pointLight.distance = 20;
+	pointLight.position.y = 4;
+	pointLight.position.x = 2.5;
+	pointLight.position.z = 2.5;
+	scene.add(pointLight); 
+
+
+	const pointLightHelper = new THREE.PointLightHelper( pointLight, 1 );
+	scene.add( pointLightHelper );
 	
 	crystalFragmentShader = await fetch('./shaders/crystal.frag').then(response => response.text());
 	crystalVertexShader = await fetch('./shaders/crystal.vert').then(response => response.text());
@@ -66,8 +79,6 @@ async function init() {
 
 	const crystal = await loadObject("./models/Crystal.glb");
 	crystal.material = crystalMaterial;
-	crystal.position.x = 2;
-	crystal.position.y = -2;
 	scene.add(crystal);
 
 
@@ -95,7 +106,20 @@ async function init() {
 	waterfall.material = waterMaterial;
 	//const planeMesh = new THREE.Mesh(waterfall, waterMaterial);
 	//planeMesh.rotation.x = - Math.PI * 0.5;
-	scene.add(waterfall);
+	//scene.add(waterfall);
+
+	const island = await loadObject("./models/Island.glb");
+	island.material = new THREE.MeshToonMaterial( { color: 0x444444});
+	scene.add(island);
+
+	const river = await loadObject("./models/River.glb");
+	river.material = waterMaterial;
+	scene.add(river);
+
+	const lake = await loadObject("./models/Lake.glb");
+	lake.material = waterMaterial;
+	scene.add(lake);
+
 
 	animate();
 }
