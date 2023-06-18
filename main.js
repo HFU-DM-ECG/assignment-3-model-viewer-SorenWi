@@ -321,7 +321,7 @@ async function loadObject(path, gltfLoader) {
 //Loads texture async and enables repeat wrapping
 async function loadTexture(path, textureLoader) {
 	return new Promise((resolve) => {
-		const texture = textureLoader.load(path, (loadedTexture) => {
+		textureLoader.load(path, (loadedTexture) => {
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
 			resolve(loadedTexture);
