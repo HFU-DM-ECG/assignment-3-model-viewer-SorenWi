@@ -324,7 +324,7 @@ async function loadTexture(path, textureLoader) {
 		const texture = textureLoader.load(path, (loadedTexture) => {
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
-			resolve(texture);
+			resolve(loadedTexture);
 		});
 	});
 }
